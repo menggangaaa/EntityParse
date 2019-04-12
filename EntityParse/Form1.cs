@@ -739,7 +739,7 @@ namespace EntityParse
             {
                 for (int j = 0; j < treeView1.Nodes[i].Nodes.Count; j++)
                 {
-                    if (treeView1.Nodes[i].Nodes[j].Text.IndexOf("医疗应收保证金") > -1
+                    if (treeView1.Nodes[i].Nodes[j].Text.IndexOf("医疗销售结算") > -1
                         && treeView1.Nodes[i].Nodes[j].Text.Length == 7)
                     {
                         treeView1.Nodes[i].Nodes[j].Expand();
