@@ -40,13 +40,22 @@ namespace EntityParse
         private string relationPath = "";//关系配置路径
         private string enumPath = "";//枚举配置路径
         private string bizunitPath = "";//业务单元配置路径
-        private string packgePath = "";//包配置路径
+        private string packagePath = "";//包配置路径
 
-        private void GetValue(string section, string key, out string value)
+        private string entityToPackagePath = "";//实体对应包路径配置路径
+
+        //private void GetValue(string section, string key, out string value)
+
+        //{
+        //    StringBuilder stringBuilder = new StringBuilder();
+        //    GetPrivateProfileString(section, key, "", stringBuilder, 1024, basePath);
+        //    value = stringBuilder.ToString();
+        //}
+        private void GetValue(string section, string key, out string value, string path)
 
         {
             StringBuilder stringBuilder = new StringBuilder();
-            GetPrivateProfileString(section, key, "", stringBuilder, 1024, basePath);
+            GetPrivateProfileString(section, key, "", stringBuilder, 1024, path);
             value = stringBuilder.ToString();
         }
 
@@ -58,24 +67,39 @@ namespace EntityParse
             if (folder.ShowDialog() == DialogResult.OK)
             {
                 //\\scm
-                if (Directory.Exists(folder.SelectedPath + "\\metadata\\com\\kingdee\\eas\\hse\\scm") == true)
+                if (radioButton1.Checked)
                 {
-                    textBox1.Text = folder.SelectedPath;
-                    WritePrivateProfileString("Information", "path", textBox1.Text.Trim(), basePath);
-                    if (radioButton1.Checked)
+                    if (Directory.Exists(folder.SelectedPath + "\\metadata\\com\\kingdee\\eas\\hse\\scm") == true)
                     {
-                        WritePrivateProfileString("Information", "select", "1", basePath);
+                        textBox1.Text = folder.SelectedPath;
+                        WritePrivateProfileString("Information", "path", textBox1.Text.Trim(), basePath);
+                        if (radioButton1.Checked)
+                        {
+                            WritePrivateProfileString("Information", "select", "1", basePath);
+                        }
+                        else
+                        {
+                            WritePrivateProfileString("Information", "select", "2", basePath);
+                        }
+                        //+ "\\metadata\\com\\kingdee\\eas\\hse\\scm";
+                        initTree();
                     }
                     else
                     {
-                        WritePrivateProfileString("Information", "select", "2", basePath);
+                        MessageBox.Show("选择的文件夹不是项目的根目录,请重新选择!");
                     }
-                    //+ "\\metadata\\com\\kingdee\\eas\\hse\\scm";
-                    initTree();
                 }
                 else
                 {
-                    MessageBox.Show("选择的文件夹不是项目的根目录,请重新选择!");
+                    if (Directory.Exists(folder.SelectedPath + "\\metas") == true)
+                    {
+                        textBox1.Text = folder.SelectedPath;
+                        WritePrivateProfileString("Information", "path", textBox1.Text.Trim(), basePath);
+                    }
+                    else
+                    {
+                        MessageBox.Show("选择的文件夹不是客户端的根目录,请重新选择!");
+                    }
                 }
             }
         }
@@ -100,23 +124,25 @@ namespace EntityParse
             relationPath = Application.LocalUserAppDataPath + "\\RealtionConfig.ini";//关系配置路径
             enumPath = Application.LocalUserAppDataPath + "\\EnumConfig.ini";//枚举配置路径
             bizunitPath = Application.LocalUserAppDataPath + "\\BizunitConfig.ini";//业务单元配置路径
-            packgePath = Application.LocalUserAppDataPath + "\\PackgeConfig.ini";//包配置路径
+            packagePath = Application.LocalUserAppDataPath + "\\PackageConfig.ini";//包配置路径
+            entityToPackagePath = Application.LocalUserAppDataPath + "\\EntityToPackageConfig.ini";//实体对应包路径配置路径
             fileExists(basePath);
             fileExists(entityPath);
             fileExists(relationPath);
             fileExists(enumPath);
             fileExists(bizunitPath);
-            fileExists(packgePath);
+            fileExists(packagePath);
+            fileExists(entityToPackagePath);
 
             string outString;
             try
             {
-                GetValue("Information", "path", out outString);
+                GetValue("Information", "path", out outString, basePath);
                 if (outString != null && outString.Length > 0)
                 {
                     textBox1.Text = outString;
                 }
-                GetValue("Information", "select", out outString);
+                GetValue("Information", "select", out outString, basePath);
                 if (outString != null && outString.Length > 0)
                 {
                     if (outString == "1")
@@ -128,7 +154,7 @@ namespace EntityParse
                         radioButton2.Checked = true;
                     }
                 }
-                GetValue("Information", "isInitJar", out outString);
+                GetValue("Information", "isInitJar", out outString, basePath);
                 if (outString == null || outString.Length == 0 || outString == "0")
                 {
                     //未初始化jar包列表,初始化jar包列表
@@ -151,17 +177,22 @@ namespace EntityParse
             //initJarMetaDice();
             //asc.controllInitializeSize(this);     \\scm
             string path = textBox1.Text + "\\metadata\\com\\kingdee\\eas\\hse\\scm";
-            if (Directory.Exists(path))
+            if (Directory.Exists(path) && radioButton1.Checked)
             {
                 initTree();
             }
-            List<string> jarMetas = ReadSingleSection("JarFileList", basePath);
+            List<string> jarMetas = ReadSingleSection("metadata", entityPath);
             foreach (string jarMetaName in jarMetas)
             {
-                if (jarMetaName.IndexOf(".entity") > -1)
-                {
-                    textBox3.AutoCompleteCustomSource.Add(jarMetaName);
-                }
+
+                textBox3.AutoCompleteCustomSource.Add(jarMetaName);
+            }
+            jarMetas = ReadSingleSection("metadata", bizunitPath);
+            foreach (string jarMetaName in jarMetas)
+            {
+
+                textBox3.AutoCompleteCustomSource.Add(jarMetaName);
+                
             }
             textBox3.AutoCompleteMode = AutoCompleteMode.Suggest;
             textBox3.AutoCompleteSource = AutoCompleteSource.CustomSource;
@@ -835,11 +866,26 @@ namespace EntityParse
             {
                 //在左边树中找不到
                 string outString = "";
-                GetValue("JarFileList", textBox3.Text, out outString);
+                //GetValue("JarFileList", textBox3.Text, out outString, basePath);
+                GetValue("metadata", textBox3.Text, out outString, entityPath);
                 if (outString.Length > 0)
                 {
                     string path = textBox1.Text + "\\metadata\\" + textBox3.Text;
                     xmlParse(path);
+                }
+                else
+                {
+                    GetValue("metadata", textBox3.Text, out outString, bizunitPath);
+                    if (outString.Length > 0)
+                    {
+                        string entityName = outString;
+                        GetValue("metadata", entityName, out outString, entityPath);
+                        if (outString.Length > 0)
+                        {
+                            string path = textBox1.Text + "\\metadata\\" + entityName;
+                            xmlParse(path);
+                        }
+                    }
                 }
             }
 
@@ -1282,6 +1328,11 @@ namespace EntityParse
             {
                 string filePath = textBox1.Text + source;
                 DirectoryInfo di = new DirectoryInfo(filePath);
+                if (!di.Exists)
+                {
+                    MessageBox.Show("文件夹路径不正确!!!");
+                    return;
+                }
                 FileInfo[] files = di.GetFiles();
                 foreach (FileInfo file in files)
                 {
@@ -1295,6 +1346,8 @@ namespace EntityParse
                             if (entry.Name.IndexOf(".entity") > -1
                                 || entry.Name.IndexOf(".enum") > -1
                                 || entry.Name.IndexOf(".relation") > -1
+                                || entry.Name.IndexOf(".package") > -1
+                                || entry.Name.IndexOf(".bizunit") > -1
                                 //|| entry.Name.IndexOf(".table") > -1
                                 )
                             {
@@ -1308,12 +1361,14 @@ namespace EntityParse
                                 {
                                     matePath = file.FullName.Replace(textBox1.Text + "\\metas\\", "");
                                 }
-                                WritePrivateProfileString("JarFileList", mateName, matePath, basePath);
+                                //WritePrivateProfileString("JarFileList", mateName, matePath, basePath);
+                                writeMetaDataToConfig(zipStream, entry, mateName, matePath);
                             }
                         }
                         //获取下一个文件
                         entry = zipStream.GetNextEntry();
                     }
+                    zipStream.Close();
                     if (progressBar1.InvokeRequired)
                     {
                         // 当一个控件的InvokeRequired属性值为真时，说明有一个创建它以外的线程想访问它
@@ -1337,26 +1392,59 @@ namespace EntityParse
             {
                 if (radioButton2.Checked)
                 {
+                    textBox3.AutoCompleteMode = AutoCompleteMode.None;
+                    textBox3.AutoCompleteSource = AutoCompleteSource.None;
                     textBox3.AutoCompleteCustomSource.Clear();
-                    List<string> jarMetas = ReadSingleSection("JarFileList", basePath);
+                    List<string> jarMetas = ReadSingleSection("metadata", entityPath);
                     foreach (string jarMetaName in jarMetas)
                     {
-                        if (jarMetaName.IndexOf(".entity") > -1)
-                        {
-                            textBox3.AutoCompleteCustomSource.Add(jarMetaName);
-                        }
+                        textBox3.AutoCompleteCustomSource.Add(jarMetaName);
                     }
+                    jarMetas = ReadSingleSection("metadata", bizunitPath);
+                    foreach (string jarMetaName in jarMetas)
+                    {
+                        textBox3.AutoCompleteCustomSource.Add(jarMetaName);
+                    }
+                    textBox3.AutoCompleteMode = AutoCompleteMode.Suggest;
+                    textBox3.AutoCompleteSource = AutoCompleteSource.CustomSource;
                 }
             };
             textBox3.Invoke(actionDelegate2, str);
         }
 
+        //从配置文件读取元数据
         private XmlTextReader getJarMetaObject(string path)
         {
             string matePath = "";
             string[] strs = path.Split('\\');
             string fileName = strs[strs.Length - 1];
-            GetValue("JarFileList", fileName, out matePath);
+            //GetValue("JarFileList", fileName, out matePath, basePath);
+            if (path.IndexOf(".entity") > -1)
+            {
+                GetValue("metadata", fileName, out matePath, entityPath);
+                //if (radioButton2.Checked)
+                //{
+                string entityName = "";
+                GetValue("metadata", fileName, out entityName, entityToPackagePath);
+                fileName = entityName;
+                //}
+            }
+            else if (path.IndexOf(".relation") > -1)
+            {
+                GetValue("metadata", fileName, out matePath, relationPath);
+            }
+            else if (path.IndexOf(".enum") > -1)
+            {
+                GetValue("metadata", fileName, out matePath, enumPath);
+            }
+            else if (path.IndexOf(".bizunit") > -1)
+            {
+                GetValue("metadata", fileName, out matePath, bizunitPath);
+            }
+            else if (path.IndexOf(".package") > -1)
+            {
+                GetValue("metadata", fileName, out matePath, packagePath);
+            }
             if (matePath != null && matePath.Length > 0)
             {
                 string baseMetaPath = "\\basemetas\\";
@@ -1376,6 +1464,7 @@ namespace EntityParse
                         fileStream.Read(bytes, 0, bytes.Length);
                         fileStream.Position = 0;
                         jarFile[jarPath] = bytes;
+                        //jarFileStream[jarPath] = zipStream;
                     }
                     else
                     {
@@ -1383,15 +1472,16 @@ namespace EntityParse
                         Stream newStream = new MemoryStream(bytes);
                         BufferedStream stream = new BufferedStream(newStream);
                         zipStream = new ZipInputStream(stream);
+                        //Console.WriteLine("*******************" + n);
+                        n++;
                     }
-
-
+                    
                     ZipEntry entry = zipStream.GetNextEntry();
                     while (entry != null)
                     {
                         if (!entry.IsDirectory)
                         {
-                            if (entry.Name.IndexOf("/" + fileName) > -1)
+                            if (entry.Name.IndexOf("/" + fileName) > -1 || entry.Name.Equals(fileName))
                             {
                                 byte[] data = new byte[zipStream.Length];
                                 zipStream.Read(data, 0, data.Length);
@@ -1402,12 +1492,15 @@ namespace EntityParse
                         //获取下一个文件
                         entry = zipStream.GetNextEntry();
                     }
+                    zipStream.Close();
                 }
             }
             return null;
         }
 
         Dictionary<string, byte[]> jarFile = new Dictionary<string, byte[]>();
+        int n = 1;
+        //Dictionary<string,ZipInputStream> jarFileStream = new Dictionary<string, ZipInputStream>();
 
         public string empToValue(object o)
         {
@@ -1484,5 +1577,41 @@ namespace EntityParse
                 }
             return result;
         }
+
+        //将元数据写入 配置文件
+        public void writeMetaDataToConfig(ZipInputStream zipStream, ZipEntry entry, string mateName, string matePath)
+        {
+            if (entry.Name.IndexOf(".entity") > -1)
+            {
+                WritePrivateProfileString("metadata", mateName, matePath, entityPath);
+
+                WritePrivateProfileString("metadata", mateName, entry.Name, entityToPackagePath);
+            }
+            else if (entry.Name.IndexOf(".relation") > -1)
+            {
+                WritePrivateProfileString("metadata", mateName, matePath, relationPath);
+            }
+            else if (entry.Name.IndexOf(".enum") > -1)
+            {
+                WritePrivateProfileString("metadata", mateName, matePath, enumPath);
+            }
+            else if (entry.Name.IndexOf(".bizunit") > -1)
+            {
+                byte[] data = new byte[zipStream.Length];
+                zipStream.Read(data, 0, data.Length);
+                BufferedStream stream = new BufferedStream(new MemoryStream(data));
+                string name = MetaDataUtil.getPackageOrBizunitName(new XmlTextReader(stream), "bizUnit");
+                WritePrivateProfileString("metadata", name, mateName.Replace(".bizunit", ".entity"), bizunitPath);
+            }
+            else if (entry.Name.IndexOf(".package") > -1)
+            {
+                byte[] data = new byte[zipStream.Length];
+                zipStream.Read(data, 0, data.Length);
+                BufferedStream stream = new BufferedStream(new MemoryStream(data));
+                string name = MetaDataUtil.getPackageOrBizunitName(new XmlTextReader(stream), "package");
+                WritePrivateProfileString("metadata", name, entry.Name.Substring(0, entry.Name.LastIndexOf(".")), packagePath);
+            }
+        }
+
     }
 }
