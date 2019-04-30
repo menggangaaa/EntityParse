@@ -34,21 +34,19 @@ namespace EntityParse
         [DllImport("kernel32.dll")]
         private static extern uint GetPrivateProfileString(string lpAppName, string lpKeyName, string lpDefault, byte[] lpReturnedString, uint nSize, string lpFileName);
 
-        private string basePath = "";
-        private string basePath2 = "";
+        private string basePath = "";//基本信息配置路径
+
+        private string entityPath = "";//实体配置路径
+        private string relationPath = "";//关系配置路径
+        private string enumPath = "";//枚举配置路径
+        private string bizunitPath = "";//业务单元配置路径
+        private string packgePath = "";//包配置路径
 
         private void GetValue(string section, string key, out string value)
 
         {
             StringBuilder stringBuilder = new StringBuilder();
-            if (key.IndexOf("metas\\sp\\") >-1)
-            {
-                GetPrivateProfileString(section, key, "", stringBuilder, 1024, basePath2);
-            }
-            else
-            {
-                GetPrivateProfileString(section, key, "", stringBuilder, 1024, basePath);
-            }
+            GetPrivateProfileString(section, key, "", stringBuilder, 1024, basePath);
             value = stringBuilder.ToString();
         }
 
@@ -87,18 +85,29 @@ namespace EntityParse
             initTree();
         }
 
+        private void fileExists(string path)
+        {
+            if (!File.Exists(path))
+            {
+                File.Create(path);
+            }
+        }
+
         private void mainPanel_Load(object sender, EventArgs e)
         {
-            basePath = Application.LocalUserAppDataPath + "\\Config.ini";
-            basePath2 = Application.LocalUserAppDataPath + "\\Config2.ini";
-            if (!File.Exists(basePath))
-            {
-                File.Create(basePath);
-            }
-            if (!File.Exists(basePath2))
-            {
-                File.Create(basePath2);
-            }
+            basePath = Application.LocalUserAppDataPath + "\\BaseConfig.ini";//基本信息配置路径
+            entityPath = Application.LocalUserAppDataPath + "\\EntityConfig.ini";//实体配置路径
+            relationPath = Application.LocalUserAppDataPath + "\\RealtionConfig.ini";//关系配置路径
+            enumPath = Application.LocalUserAppDataPath + "\\EnumConfig.ini";//枚举配置路径
+            bizunitPath = Application.LocalUserAppDataPath + "\\BizunitConfig.ini";//业务单元配置路径
+            packgePath = Application.LocalUserAppDataPath + "\\PackgeConfig.ini";//包配置路径
+            fileExists(basePath);
+            fileExists(entityPath);
+            fileExists(relationPath);
+            fileExists(enumPath);
+            fileExists(bizunitPath);
+            fileExists(packgePath);
+
             string outString;
             try
             {
@@ -1299,14 +1308,7 @@ namespace EntityParse
                                 {
                                     matePath = file.FullName.Replace(textBox1.Text + "\\metas\\", "");
                                 }
-                                if (radioButton1.Checked || source!= "\\metas\\sp")
-                                {
-                                    WritePrivateProfileString("JarFileList", mateName, matePath, basePath);
-                                }
-                                else
-                                {
-                                    WritePrivateProfileString("JarFileList", mateName, matePath, basePath2);
-                                }
+                                WritePrivateProfileString("JarFileList", mateName, matePath, basePath);
                             }
                         }
                         //获取下一个文件
@@ -1331,7 +1333,8 @@ namespace EntityParse
                 this.label2.Invoke(actionDelegate, str);
             }
             WritePrivateProfileString("Information", "isInitJar", "1", basePath);
-            Action<string> actionDelegate2 = (x) => {
+            Action<string> actionDelegate2 = (x) =>
+            {
                 if (radioButton2.Checked)
                 {
                     textBox3.AutoCompleteCustomSource.Clear();
@@ -1382,7 +1385,7 @@ namespace EntityParse
                         zipStream = new ZipInputStream(stream);
                     }
 
-                    
+
                     ZipEntry entry = zipStream.GetNextEntry();
                     while (entry != null)
                     {
