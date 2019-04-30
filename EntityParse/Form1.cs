@@ -43,6 +43,7 @@ namespace EntityParse
         private string packagePath = "";//包配置路径
 
         private string entityToPackagePath = "";//实体对应包路径配置路径
+        private string logPath = "";//日志路径
 
         //private void GetValue(string section, string key, out string value)
 
@@ -126,6 +127,8 @@ namespace EntityParse
             bizunitPath = Application.LocalUserAppDataPath + "\\BizunitConfig.ini";//业务单元配置路径
             packagePath = Application.LocalUserAppDataPath + "\\PackageConfig.ini";//包配置路径
             entityToPackagePath = Application.LocalUserAppDataPath + "\\EntityToPackageConfig.ini";//实体对应包路径配置路径
+            logPath = Application.LocalUserAppDataPath + "\\Log.ini";//实体对应包路径配置路径
+
             fileExists(basePath);
             fileExists(entityPath);
             fileExists(relationPath);
@@ -133,6 +136,7 @@ namespace EntityParse
             fileExists(bizunitPath);
             fileExists(packagePath);
             fileExists(entityToPackagePath);
+            fileExists(logPath);
 
             string outString;
             try
@@ -192,7 +196,7 @@ namespace EntityParse
             {
 
                 textBox3.AutoCompleteCustomSource.Add(jarMetaName);
-                
+
             }
             textBox3.AutoCompleteMode = AutoCompleteMode.Suggest;
             textBox3.AutoCompleteSource = AutoCompleteSource.CustomSource;
@@ -1363,6 +1367,7 @@ namespace EntityParse
                                 }
                                 //WritePrivateProfileString("JarFileList", mateName, matePath, basePath);
                                 writeMetaDataToConfig(zipStream, entry, mateName, matePath);
+                                wirteLog(DateTime.Now.ToString("yyyyMMdd-HHmm")+":"+ matePath + "\t" + entry.Name+ "\n");
                             }
                         }
                         //获取下一个文件
@@ -1475,7 +1480,7 @@ namespace EntityParse
                         //Console.WriteLine("*******************" + n);
                         n++;
                     }
-                    
+
                     ZipEntry entry = zipStream.GetNextEntry();
                     while (entry != null)
                     {
@@ -1610,6 +1615,15 @@ namespace EntityParse
                 BufferedStream stream = new BufferedStream(new MemoryStream(data));
                 string name = MetaDataUtil.getPackageOrBizunitName(new XmlTextReader(stream), "package");
                 WritePrivateProfileString("metadata", name, entry.Name.Substring(0, entry.Name.LastIndexOf(".")), packagePath);
+            }
+        }
+
+        public void wirteLog(string text)
+        {
+            using (StreamWriter output = File.AppendText(logPath))
+            {
+                output.WriteLine(text);
+                output.Close();
             }
         }
 
