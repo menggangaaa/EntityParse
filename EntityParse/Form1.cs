@@ -201,6 +201,40 @@ namespace EntityParse
             textBox3.AutoCompleteMode = AutoCompleteMode.Suggest;
             textBox3.AutoCompleteSource = AutoCompleteSource.CustomSource;
             textBox3.Focus();
+
+            initSqlPanel();
+        }
+
+        public TextBox txtSql = null;
+        public ToolStripDropDown dropDown = null;
+        private void initSqlPanel()
+        {
+            txtSql = new TextBox();
+            txtSql.Multiline = true;
+            txtSql.WordWrap = false;
+            txtSql.ScrollBars = ScrollBars.Both;
+            txtSql.Font = new Font("微软雅黑", 12f);
+            txtSql.Text = "select * from table";
+            txtSql.BorderStyle = BorderStyle.None;
+            txtSql.Margin = new Padding(0);
+            ToolStripControlHost treeViewHost = new ToolStripControlHost(txtSql);
+            treeViewHost.Margin = new Padding(0);
+            treeViewHost.AutoSize = false;
+            treeViewHost.Size = new Size(385, 445);
+            dropDown = new ToolStripDropDown();
+            dropDown.Margin = new Padding(0);
+            dropDown.Items.Add(treeViewHost);
+            //dropDown.Show(this, 880, 300);
+
+            txtSql.KeyDown += TxtSql_KeyDown;
+        }
+
+        private void TxtSql_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.A)
+            {
+                ((TextBox)sender).SelectAll();
+            }
         }
 
         private void mainPanel_SizeChanged(object sender, EventArgs e)
@@ -1289,17 +1323,100 @@ namespace EntityParse
             else if (e.KeyChar.ToString().ToUpper() == "Q")
             {
                 Console.WriteLine("QQQQQQQQQQQQQQQ");
-                BulidSql bSql = new BulidSql();
-                bSql.StartPosition = FormStartPosition.Manual;
-                Point startPoint = MousePosition;
-                startPoint.X = startPoint.X + 10;
-                startPoint.Y = startPoint.Y + 10;
-                bSql.Location = startPoint;
-                bSql.ShowInTaskbar = false;
-                bSql.Show();
-            }
-            
+                if (dropDown != null)
+                {
+                    if (thisTableNode != null)
+                    {
+                        DataGridViewRow row = dataGridView1.Rows[0];
+                        string mainTable = row.Cells[2].Value.ToString();
+                        string alias = "main";
+                        //查询部分
+                        StringBuilder selectStr = new StringBuilder();
+                        //子分录 或F7 表连接
+                        StringBuilder entrySql = new StringBuilder();
+                        DataGridViewSelectedCellCollection selectCells = dataGridView1.SelectedCells;
+                        HashSet<int> rowIndexs = new HashSet<int>();
+                        foreach (DataGridViewCell selectCell in selectCells)
+                        {
+                            rowIndexs.Add(selectCell.RowIndex);
+                        }
+                        foreach (int index in rowIndexs)
+                        {
+                            DataGridViewRow selectRow = dataGridView1.Rows[index];
+                            if (selectRow.Index == 0)
+                            {
+                                continue;
+                            }
+                            var zorValue = selectRow.Cells[0].Value;
+                            var twoValue = selectRow.Cells[2].Value;
+                            var thrValue = selectRow.Cells[3].Value;
+                            var forValue = selectRow.Cells[4].Value;
+                            if (zorValue == null)
+                            {
+                                continue;
+                            }
+                            string columnAlias = zorValue.ToString();
+                            if (twoValue.ToString() == "" && thrValue.ToString() == "")
+                            {
+                                continue;
+                            }
+                            if (twoValue.ToString() != "" && thrValue.ToString() != "" && forValue.ToString() == "")
+                            {
+                                //F7 字段 和表
+                                string key = twoValue.ToString();
+                                string f7TableName = thrValue.ToString();
+                                entrySql.Append("left join ").Append(f7TableName).Append(" ");
+                                entrySql.Append(columnAlias).Append(" on ").Append(columnAlias).Append(".fid");
+                                entrySql.Append("=#1.").Append(key);
+                                entrySql.Append(Environment.NewLine);
+                            }
+                            else if (twoValue.ToString() != "" && thrValue.ToString() != "" && forValue.ToString() != "")
+                            {
+                                //当前表字段--枚举
+                                selectStr.Append("#1.").Append(twoValue.ToString()).Append(" ").Append(columnAlias).Append(",");
+                                selectStr.Append(Environment.NewLine);
+                            }
+                            else if (twoValue.ToString() != "" && thrValue.ToString() == "")
+                            {
+                                //当前表字段
+                                selectStr.Append("#1.").Append(twoValue.ToString()).Append(" ").Append(columnAlias).Append(",");
+                                selectStr.Append(Environment.NewLine);
+                            }
 
+                            else if (twoValue.ToString() == "" && thrValue.ToString() != "")
+                            {
+                                //下级分录
+                                string f7TableName = thrValue.ToString();
+                                entrySql.Append("left join ").Append(f7TableName).Append(" ");
+                                entrySql.Append(columnAlias).Append(" on ").Append(columnAlias).Append(".fparentid");
+                                entrySql.Append("=#1.fid");
+                                entrySql.Append(Environment.NewLine);
+                            }
+                        }
+                        selectStr.Append("#1.fid ID").Append(Environment.NewLine); ;
+                        //SQL主体
+                        StringBuilder sql = new StringBuilder();
+                        sql.Append("select").Append(Environment.NewLine); ;
+                        //sql.Append("#1.*").Append(Environment.NewLine);
+                        sql.Append(selectStr);
+                        sql.Append("from #0 #1").Append(Environment.NewLine);
+                        sql.Append(entrySql);
+                        //替换
+                        sql.Replace("#0", mainTable);
+                        sql.Replace("#1", alias);
+                        txtSql.Text = sql.ToString();
+                    }
+                    dropDown.Show(this, 880, 300);
+                }
+                //BulidSql bSql = new BulidSql();
+                //bSql.StartPosition = FormStartPosition.Manual;
+                //Point startPoint = MousePosition;
+                //startPoint.X = startPoint.X + 10;
+                //startPoint.Y = startPoint.Y + 10;
+                //bSql.Location = startPoint;
+                //bSql.ShowInTaskbar = false;
+                //bSql.Show();
+            }
         }
 
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
@@ -1764,6 +1881,5 @@ namespace EntityParse
                 output.Close();
             }
         }
-
     }
 }
