@@ -902,7 +902,7 @@ namespace EntityParse
                     textBox4.Text = "";
                     return;
                 }
-                if (node.Nodes.Count == 0)
+                if (node.Nodes.Count == 0 && node.Tag != null)
                 {
                     string path = node.Tag.ToString();
                     xmlParse(path);
@@ -1351,7 +1351,7 @@ namespace EntityParse
                             var twoValue = selectRow.Cells[2].Value;
                             var thrValue = selectRow.Cells[3].Value;
                             var forValue = selectRow.Cells[4].Value;
-                            if (zorValue == null)
+                            if (zorValue == null || twoValue == null || thrValue == null || forValue == null)
                             {
                                 continue;
                             }
