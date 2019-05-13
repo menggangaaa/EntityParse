@@ -255,187 +255,193 @@ namespace EntityParse
             string baseEntity = "";
 
             EntityInfo info = new EntityInfo();
-
-            while (reader.Read())
+            try
             {
-                string column = "";
-                string columnName = "";
-                if (reader.NodeType == XmlNodeType.Element)
+
+                while (reader.Read())
                 {
-                    if (reader.Name == "baseEntity")
+                    string column = "";
+                    string columnName = "";
+                    if (reader.NodeType == XmlNodeType.Element)
                     {
-                        if (reader.ReadToDescendant("key"))
+                        if (reader.Name == "baseEntity")
                         {
-                            string pack = reader.GetAttribute("value");
-                            if (reader.ReadToNextSibling("key"))
+                            if (reader.ReadToDescendant("key"))
                             {
-                                string name = reader.GetAttribute("value");
-                                baseEntity = getMetaDataFullPath(pack + "." + name, ".entity");
+                                string pack = reader.GetAttribute("value");
+                                if (reader.ReadToNextSibling("key"))
+                                {
+                                    string name = reader.GetAttribute("value");
+                                    baseEntity = getMetaDataFullPath(pack + "." + name, ".entity");
+                                }
                             }
                         }
-                    }
-                    else if (reader.Name == "name")
-                    {
-                        if (info.name == null)
+                        else if (reader.Name == "name")
                         {
-                            info.name = reader.ReadString();//实体名
-                        }
-                    }
-                    if (reader.Name == "table")
-                    {
-                        if (reader.ReadToDescendant("key"))
-                        {
-                            string table = reader.GetAttribute("name");
-                            if (table == "name")
+                            if (info.name == null)
                             {
-                                string value = reader.GetAttribute("value");
-                                textBox4.Text = value;
+                                info.name = reader.ReadString();//实体名
                             }
-                            if (reader.ReadToNextSibling("key"))
+                        }
+                        if (reader.Name == "table")
+                        {
+                            if (reader.ReadToDescendant("key"))
                             {
-                                table = reader.GetAttribute("name");
+                                string table = reader.GetAttribute("name");
                                 if (table == "name")
                                 {
                                     string value = reader.GetAttribute("value");
-                                    info.tableName = value;//实体对应表名
+                                    textBox4.Text = value;
+                                }
+                                if (reader.ReadToNextSibling("key"))
+                                {
+                                    table = reader.GetAttribute("name");
+                                    if (table == "name")
+                                    {
+                                        string value = reader.GetAttribute("value");
+                                        info.tableName = value;//实体对应表名
+                                    }
                                 }
                             }
                         }
-                    }
-                    if (reader.Name == "ownProperty" || reader.Name == "linkProperty")
-                    {
-                        string link = reader.Name;
-                        if (reader.ReadToDescendant("name"))
+                        if (reader.Name == "ownProperty" || reader.Name == "linkProperty")
                         {
-                            string name = reader.ReadString();
-                            if (name == "parent")
+                            string link = reader.Name;
+                            if (reader.ReadToDescendant("name"))
                             {
-                                continue;
-                            }
-                            dict.Add(name, null);
-                            dict2.Add(name, null);
-                            dict3.Add(name, null);
-                            dict4.Add(name, null);
-                            dict5.Add(name, null);
-
-                            if (reader.ReadToNextSibling("configured"))
-                            {
-                                while (reader.Read())
+                                string name = reader.ReadString();
+                                if (name == "parent")
                                 {
-                                    string r = reader.Name;
-                                    if (r == "mappingField")
+                                    continue;
+                                }
+                                dict.Add(name, null);
+                                dict2.Add(name, null);
+                                dict3.Add(name, null);
+                                dict4.Add(name, null);
+                                dict5.Add(name, null);
+
+                                if (reader.ReadToNextSibling("configured"))
+                                {
+                                    while (reader.Read())
                                     {
-                                        if (reader.ReadToDescendant("key"))
+                                        string r = reader.Name;
+                                        if (r == "mappingField")
                                         {
-                                            string table = reader.GetAttribute("value");
-                                            dict2[name] = table;
-                                        }
-                                    }
-                                    else if (r == "relationship")
-                                    {
-                                        reader.ReadToDescendant("key");
-                                        string package = reader.GetAttribute("value");
-                                        reader.ReadToNextSibling("key");
-                                        string fileName = reader.GetAttribute("value");
-                                        //格式化对应关联关系文件路径
-                                        string[] packings = package.Split('.');
-                                        path = textBox1.Text;
-                                        path += "\\metadata";
-                                        foreach (string item in packings)
-                                        {
-                                            path += "\\" + item;
-                                        }
-                                        path += "\\" + fileName + ".relation";
-                                        string tableName = getRelTableName(path);
-                                        dict5[name] = getRelTablePath(path);
-                                        dict3[name] = tableName;
-                                        break;
-                                    }
-                                    else if (r == "dataType")
-                                    {
-                                        if (link == "ownProperty")
-                                        {
-                                            string dataType = reader.ReadElementString();
-                                            dict4[name] = dataType;
-                                            if (reader.ReadToNextSibling("metadataRef"))
+                                            if (reader.ReadToDescendant("key"))
                                             {
-                                                if (!reader.IsEmptyElement)
+                                                string table = reader.GetAttribute("value");
+                                                dict2[name] = table;
+                                            }
+                                        }
+                                        else if (r == "relationship")
+                                        {
+                                            reader.ReadToDescendant("key");
+                                            string package = reader.GetAttribute("value");
+                                            reader.ReadToNextSibling("key");
+                                            string fileName = reader.GetAttribute("value");
+                                            //格式化对应关联关系文件路径
+                                            string[] packings = package.Split('.');
+                                            path = textBox1.Text;
+                                            path += "\\metadata";
+                                            foreach (string item in packings)
+                                            {
+                                                path += "\\" + item;
+                                            }
+                                            path += "\\" + fileName + ".relation";
+                                            string tableName = getRelTableName(path);
+                                            dict5[name] = getRelTablePath(path);
+                                            dict3[name] = tableName;
+                                            break;
+                                        }
+                                        else if (r == "dataType")
+                                        {
+                                            if (link == "ownProperty")
+                                            {
+                                                string dataType = reader.ReadElementString();
+                                                dict4[name] = dataType;
+                                                if (reader.ReadToNextSibling("metadataRef"))
                                                 {
-                                                    string enumName = reader.ReadElementString();
-                                                    string[] enumNames = enumName.Split('.');
-                                                    dict3[name] = enumNames[enumNames.Length - 1];
-                                                    dict5[name] = getMetaDataFullPath(enumName, ".enum");
+                                                    if (!reader.IsEmptyElement)
+                                                    {
+                                                        string enumName = reader.ReadElementString();
+                                                        string[] enumNames = enumName.Split('.');
+                                                        dict3[name] = enumNames[enumNames.Length - 1];
+                                                        dict5[name] = getMetaDataFullPath(enumName, ".enum");
+                                                    }
                                                 }
                                             }
                                         }
-                                    }
-                                    if (r == "linkProperty" || r == "ownProperty")
-                                    {
-                                        break;
+                                        if (r == "linkProperty" || r == "ownProperty")
+                                        {
+                                            break;
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    if (reader.Name == "rs")
-                    {
-                        if (n == 0)
+                        if (reader.Name == "rs")
                         {
-                            if (reader.ReadToDescendant("lang"))
+                            if (n == 0)
                             {
-                                do
+                                if (reader.ReadToDescendant("lang"))
                                 {
-                                    string locale = reader.GetAttribute("locale");
-                                    if (locale == "zh_CN")
+                                    do
                                     {
-                                        columnName = reader.GetAttribute("value");
-                                        info.alias = columnName;//实体 别名
-                                        break;
-                                    }
-                                } while (reader.ReadToNextSibling("lang"));
+                                        string locale = reader.GetAttribute("locale");
+                                        if (locale == "zh_CN")
+                                        {
+                                            columnName = reader.GetAttribute("value");
+                                            info.alias = columnName;//实体 别名
+                                            break;
+                                        }
+                                    } while (reader.ReadToNextSibling("lang"));
 
-                            }
-                            n++;
-                            continue;
-                        }
-                        string keyStr = reader.GetAttribute("key");
-                        int start = keyStr.IndexOf("ownProperty[");
-                        //int start = keyStr.IndexOf("linkProperty[");
-                        int start2 = keyStr.IndexOf("linkProperty[");
-                        int end = keyStr.IndexOf("].alias");
-                        if ((start > 0 || start2 > 0) && end > 0 && (start + 12 < keyStr.Length || start2 + 13 < keyStr.Length))
-                        {
-                            if (start > 0)
-                            {
-                                column = keyStr.Substring(start + 12, end - start - 12);
-                            }
-                            else if (start2 > 0)
-                            {
-                                column = keyStr.Substring(start2 + 13, end - start2 - 13);
-                            }
-                            if (column == "parent" || column == "parent1")
-                            {
+                                }
+                                n++;
                                 continue;
                             }
-                            if (reader.ReadToDescendant("lang"))
+                            string keyStr = reader.GetAttribute("key");
+                            int start = keyStr.IndexOf("ownProperty[");
+                            //int start = keyStr.IndexOf("linkProperty[");
+                            int start2 = keyStr.IndexOf("linkProperty[");
+                            int end = keyStr.IndexOf("].alias");
+                            if ((start > 0 || start2 > 0) && end > 0 && (start + 12 < keyStr.Length || start2 + 13 < keyStr.Length))
                             {
-                                do
+                                if (start > 0)
                                 {
-                                    keyStr = reader.GetAttribute("locale");
-                                    if (keyStr == "zh_CN")
+                                    column = keyStr.Substring(start + 12, end - start - 12);
+                                }
+                                else if (start2 > 0)
+                                {
+                                    column = keyStr.Substring(start2 + 13, end - start2 - 13);
+                                }
+                                if (column == "parent" || column == "parent1")
+                                {
+                                    continue;
+                                }
+                                if (reader.ReadToDescendant("lang"))
+                                {
+                                    do
                                     {
-                                        columnName = reader.GetAttribute("value");
-                                        dict[column] = columnName;
-                                        break;
-                                    }
-                                } while (reader.ReadToNextSibling("lang"));
+                                        keyStr = reader.GetAttribute("locale");
+                                        if (keyStr == "zh_CN")
+                                        {
+                                            columnName = reader.GetAttribute("value");
+                                            dict[column] = columnName;
+                                            break;
+                                        }
+                                    } while (reader.ReadToNextSibling("lang"));
 
+                                }
                             }
                         }
                     }
                 }
-            }
 
+            }
+            catch (Exception)
+            {
+            }
             reader.Close();
 
             foreach (var item in dict)
@@ -495,182 +501,189 @@ namespace EntityParse
             string baseEntity = "";
 
             EntityInfo info = new EntityInfo();
-
-            while (reader.Read())
+            try
             {
-                string column = "";
-                string columnName = "";
-                if (reader.NodeType == XmlNodeType.Element)
+
+
+                while (reader.Read())
                 {
-                    if (reader.Name == "baseEntity")
+                    string column = "";
+                    string columnName = "";
+                    if (reader.NodeType == XmlNodeType.Element)
                     {
-                        if (reader.ReadToDescendant("key"))
+                        if (reader.Name == "baseEntity")
                         {
-                            string pack = reader.GetAttribute("value");
-                            if (reader.ReadToNextSibling("key"))
+                            if (reader.ReadToDescendant("key"))
                             {
-                                string name = reader.GetAttribute("value");
-                                baseEntity = getMetaDataFullPath(pack + "." + name, ".entity");
-                            }
-                        }
-                    }
-                    else if (reader.Name == "name")
-                    {
-                        if (info.name == null)
-                        {
-                            info.name = reader.ReadString();//实体名
-                        }
-                    }
-                    if (reader.Name == "table")
-                    {
-                        if (reader.ReadToDescendant("key"))
-                        {
-                            string table = reader.GetAttribute("name");
-                            if (reader.ReadToNextSibling("key"))
-                            {
-                                table = reader.GetAttribute("name");
-                                if (table == "name")
+                                string pack = reader.GetAttribute("value");
+                                if (reader.ReadToNextSibling("key"))
                                 {
-                                    string value = reader.GetAttribute("value");
-                                    info.tableName = value;//实体表名
+                                    string name = reader.GetAttribute("value");
+                                    baseEntity = getMetaDataFullPath(pack + "." + name, ".entity");
                                 }
                             }
                         }
-                    }
-                    if (reader.Name == "ownProperty" || reader.Name == "linkProperty")
-                    {
-                        string link = reader.Name;
-                        if (reader.ReadToDescendant("name"))
+                        else if (reader.Name == "name")
                         {
-                            string name = reader.ReadString();
-                            if (name == "parent")
+                            if (info.name == null)
                             {
-                                continue;
+                                info.name = reader.ReadString();//实体名
                             }
-                            dict.Add(name, null);
-                            dict2.Add(name, null);
-                            dict3.Add(name, null);
-                            dict4.Add(name, null);
-                            dict5.Add(name, null);
-
-                            if (reader.ReadToNextSibling("userDefined"))
+                        }
+                        if (reader.Name == "table")
+                        {
+                            if (reader.ReadToDescendant("key"))
                             {
-                                while (reader.Read())
+                                string table = reader.GetAttribute("name");
+                                if (reader.ReadToNextSibling("key"))
                                 {
-                                    string r = reader.Name;
-                                    if (r == "mappingField")
+                                    table = reader.GetAttribute("name");
+                                    if (table == "name")
                                     {
-                                        if (reader.ReadToDescendant("key"))
-                                        {
-                                            string table = reader.GetAttribute("value");
-                                            dict2[name] = table;
-                                        }
+                                        string value = reader.GetAttribute("value");
+                                        info.tableName = value;//实体表名
                                     }
-                                    else if (r == "relationship")
+                                }
+                            }
+                        }
+                        if (reader.Name == "ownProperty" || reader.Name == "linkProperty")
+                        {
+                            string link = reader.Name;
+                            if (reader.ReadToDescendant("name"))
+                            {
+                                string name = reader.ReadString();
+                                if (name == "parent")
+                                {
+                                    continue;
+                                }
+                                dict.Add(name, null);
+                                dict2.Add(name, null);
+                                dict3.Add(name, null);
+                                dict4.Add(name, null);
+                                dict5.Add(name, null);
+
+                                if (reader.ReadToNextSibling("userDefined"))
+                                {
+                                    while (reader.Read())
                                     {
-                                        reader.ReadToDescendant("key");
-                                        string package = reader.GetAttribute("value");
-                                        reader.ReadToNextSibling("key");
-                                        string fileName = reader.GetAttribute("value");
-                                        //格式化对应关联关系文件路径
-                                        string[] packings = package.Split('.');
-                                        path = textBox1.Text;
-                                        path += "\\metadata";
-                                        foreach (string item in packings)
+                                        string r = reader.Name;
+                                        if (r == "mappingField")
                                         {
-                                            path += "\\" + item;
-                                        }
-                                        path += "\\" + fileName + ".relation";
-                                        string tableName = getRelTableName(path);
-                                        dict5[name] = getRelTablePath(path);
-                                        dict3[name] = tableName;
-                                        break;
-                                    }
-                                    else if (r == "dataType")
-                                    {
-                                        if (link == "ownProperty")
-                                        {
-                                            string dataType = reader.ReadElementString();
-                                            dict4[name] = dataType;
-                                            if (reader.ReadToNextSibling("metadataRef"))
+                                            if (reader.ReadToDescendant("key"))
                                             {
-                                                if (!reader.IsEmptyElement)
+                                                string table = reader.GetAttribute("value");
+                                                dict2[name] = table;
+                                            }
+                                        }
+                                        else if (r == "relationship")
+                                        {
+                                            reader.ReadToDescendant("key");
+                                            string package = reader.GetAttribute("value");
+                                            reader.ReadToNextSibling("key");
+                                            string fileName = reader.GetAttribute("value");
+                                            //格式化对应关联关系文件路径
+                                            string[] packings = package.Split('.');
+                                            path = textBox1.Text;
+                                            path += "\\metadata";
+                                            foreach (string item in packings)
+                                            {
+                                                path += "\\" + item;
+                                            }
+                                            path += "\\" + fileName + ".relation";
+                                            string tableName = getRelTableName(path);
+                                            dict5[name] = getRelTablePath(path);
+                                            dict3[name] = tableName;
+                                            break;
+                                        }
+                                        else if (r == "dataType")
+                                        {
+                                            if (link == "ownProperty")
+                                            {
+                                                string dataType = reader.ReadElementString();
+                                                dict4[name] = dataType;
+                                                if (reader.ReadToNextSibling("metadataRef"))
                                                 {
-                                                    string enumName = reader.ReadElementString();
-                                                    string[] enumNames = enumName.Split('.');
-                                                    dict3[name] = enumNames[enumNames.Length - 1];
-                                                    dict5[name] = getMetaDataFullPath(enumName, ".enum");
+                                                    if (!reader.IsEmptyElement)
+                                                    {
+                                                        string enumName = reader.ReadElementString();
+                                                        string[] enumNames = enumName.Split('.');
+                                                        dict3[name] = enumNames[enumNames.Length - 1];
+                                                        dict5[name] = getMetaDataFullPath(enumName, ".enum");
+                                                    }
                                                 }
                                             }
                                         }
-                                    }
-                                    if (r == "linkProperty" || r == "ownProperty")
-                                    {
-                                        break;
+                                        if (r == "linkProperty" || r == "ownProperty")
+                                        {
+                                            break;
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    if (reader.Name == "rs")
-                    {
-                        if (n == 0)
+                        if (reader.Name == "rs")
                         {
-                            if (reader.ReadToDescendant("lang"))
+                            if (n == 0)
                             {
-                                do
+                                if (reader.ReadToDescendant("lang"))
                                 {
-                                    string locale = reader.GetAttribute("locale");
-                                    if (locale == "zh_CN")
+                                    do
                                     {
-                                        columnName = reader.GetAttribute("value");
-                                        info.alias = columnName;//实体别名
-                                        break;
-                                    }
-                                } while (reader.ReadToNextSibling("lang"));
+                                        string locale = reader.GetAttribute("locale");
+                                        if (locale == "zh_CN")
+                                        {
+                                            columnName = reader.GetAttribute("value");
+                                            info.alias = columnName;//实体别名
+                                            break;
+                                        }
+                                    } while (reader.ReadToNextSibling("lang"));
 
-                            }
-                            n++;
-                            continue;
-                        }
-                        string keyStr = reader.GetAttribute("key");
-                        int start = keyStr.IndexOf("ownProperty[");
-                        //int start = keyStr.IndexOf("linkProperty[");
-                        int start2 = keyStr.IndexOf("linkProperty[");
-                        int end = keyStr.IndexOf("].alias");
-                        if ((start > 0 || start2 > 0) && end > 0 && (start + 12 < keyStr.Length || start2 + 13 < keyStr.Length))
-                        {
-                            if (start > 0)
-                            {
-                                column = keyStr.Substring(start + 12, end - start - 12);
-                            }
-                            else if (start2 > 0)
-                            {
-                                column = keyStr.Substring(start2 + 13, end - start2 - 13);
-                            }
-                            if (column == "parent" || column == "parent1")
-                            {
+                                }
+                                n++;
                                 continue;
                             }
-                            if (reader.ReadToDescendant("lang"))
+                            string keyStr = reader.GetAttribute("key");
+                            int start = keyStr.IndexOf("ownProperty[");
+                            //int start = keyStr.IndexOf("linkProperty[");
+                            int start2 = keyStr.IndexOf("linkProperty[");
+                            int end = keyStr.IndexOf("].alias");
+                            if ((start > 0 || start2 > 0) && end > 0 && (start + 12 < keyStr.Length || start2 + 13 < keyStr.Length))
                             {
-                                do
+                                if (start > 0)
                                 {
-                                    keyStr = reader.GetAttribute("locale");
-                                    if (keyStr == "zh_CN")
+                                    column = keyStr.Substring(start + 12, end - start - 12);
+                                }
+                                else if (start2 > 0)
+                                {
+                                    column = keyStr.Substring(start2 + 13, end - start2 - 13);
+                                }
+                                if (column == "parent" || column == "parent1")
+                                {
+                                    continue;
+                                }
+                                if (reader.ReadToDescendant("lang"))
+                                {
+                                    do
                                     {
-                                        columnName = reader.GetAttribute("value");
-                                        //textBox2.AppendText(column + "\t" + columnName + "\n");
-                                        //textBox3.AppendText(textBox4.Text + columnName + textBox5.Text + column + textBox6.Text + "\n");
-                                        dict[column] = columnName;
-                                        break;
-                                    }
-                                } while (reader.ReadToNextSibling("lang"));
+                                        keyStr = reader.GetAttribute("locale");
+                                        if (keyStr == "zh_CN")
+                                        {
+                                            columnName = reader.GetAttribute("value");
+                                            //textBox2.AppendText(column + "\t" + columnName + "\n");
+                                            //textBox3.AppendText(textBox4.Text + columnName + textBox5.Text + column + textBox6.Text + "\n");
+                                            dict[column] = columnName;
+                                            break;
+                                        }
+                                    } while (reader.ReadToNextSibling("lang"));
 
+                                }
                             }
                         }
                     }
                 }
+            }
+            catch (Exception)
+            {
             }
             reader.Close();
 
@@ -1273,6 +1286,20 @@ namespace EntityParse
             {
                 button4_Click(sender, e);
             }
+            else if (e.KeyChar.ToString().ToUpper() == "Q")
+            {
+                Console.WriteLine("QQQQQQQQQQQQQQQ");
+                BulidSql bSql = new BulidSql();
+                bSql.StartPosition = FormStartPosition.Manual;
+                Point startPoint = MousePosition;
+                startPoint.X = startPoint.X + 10;
+                startPoint.Y = startPoint.Y + 10;
+                bSql.Location = startPoint;
+                bSql.ShowInTaskbar = false;
+                bSql.Show();
+            }
+            
+
         }
 
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
@@ -1340,6 +1367,10 @@ namespace EntityParse
                 FileInfo[] files = di.GetFiles();
                 foreach (FileInfo file in files)
                 {
+                    if (file.FullName.IndexOf("\\metas\\sp") > -1 && file.FullName.IndexOf("\\metas\\sp\\sp_scm-metas.jar") < 0)
+                    {
+                        continue;
+                    }
                     ZipInputStream zipStream = new ZipInputStream(File.Open(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read));
                     ZipEntry entry = zipStream.GetNextEntry();
                     Dictionary<string, byte[]> dict = new Dictionary<string, byte[]>();
@@ -1367,7 +1398,7 @@ namespace EntityParse
                                 }
                                 //WritePrivateProfileString("JarFileList", mateName, matePath, basePath);
                                 writeMetaDataToConfig(zipStream, entry, mateName, matePath);
-                                wirteLog(DateTime.Now.ToString("yyyyMMdd-HHmm")+":"+ matePath + "\t" + entry.Name+ "\n");
+                                wirteLog(DateTime.Now.ToString("yyyyMMdd-HHmm") + ":" + matePath + "\t" + entry.Name + "\n");
                             }
                         }
                         //获取下一个文件
@@ -1460,22 +1491,64 @@ namespace EntityParse
                 string jarPath = textBox1.Text + baseMetaPath + matePath;
                 if (File.Exists(jarPath))
                 {
+                    //ZipInputStream zipStream = null;
+                    //if (!jarFile.ContainsKey(jarPath) || jarFile[jarPath] == null)
+                    //{
+                    //    Stream fileStream = File.Open(jarPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    //    zipStream = new ZipInputStream(fileStream);
+                    //    byte[] bytes = new byte[fileStream.Length];
+                    //    fileStream.Read(bytes, 0, bytes.Length);
+                    //    fileStream.Position = 0;
+                    //    jarFile[jarPath] = bytes;
+                    //    //jarFileStream[jarPath] = zipStream;
+                    //}
+                    //else
+                    //{
+                    //    byte[] bytes = jarFile[jarPath];
+                    //    Stream newStream = new MemoryStream(bytes);
+                    //    BufferedStream stream = new BufferedStream(newStream);
+                    //    zipStream = new ZipInputStream(stream);
+                    //    //Console.WriteLine("*******************" + n);
+                    //    n++;
+                    //}
+
+                    //ZipEntry entry = zipStream.GetNextEntry();
+                    //while (entry != null)
+                    //{
+                    //    if (!entry.IsDirectory)
+                    //    {
+                    //        if (entry.Name.IndexOf("/" + fileName) > -1 || entry.Name.Equals(fileName))
+                    //        {
+                    //            byte[] data = new byte[zipStream.Length];
+                    //            zipStream.Read(data, 0, data.Length);
+                    //            BufferedStream stream = new BufferedStream(new MemoryStream(data));
+                    //            return new XmlTextReader(stream);
+                    //        }
+                    //    }
+                    //    //获取下一个文件
+                    //    entry = zipStream.GetNextEntry();
+                    //}
+                    //zipStream.Close();
+
+                    //--------------------------------------------
                     ZipInputStream zipStream = null;
-                    if (!jarFile.ContainsKey(jarPath) || jarFile[jarPath] == null)
+                    if (!jarZipStream.ContainsKey(jarPath) || jarZipStream[jarPath] == null)
                     {
                         Stream fileStream = File.Open(jarPath, FileMode.Open, FileAccess.Read, FileShare.Read);
                         zipStream = new ZipInputStream(fileStream);
+
                         byte[] bytes = new byte[fileStream.Length];
                         fileStream.Read(bytes, 0, bytes.Length);
                         fileStream.Position = 0;
-                        jarFile[jarPath] = bytes;
+                        Stream newStream = new MemoryStream(bytes);
+                        BufferedStream stream = new BufferedStream(newStream);
+                        jarZipStream[jarPath] = stream;
                         //jarFileStream[jarPath] = zipStream;
                     }
                     else
                     {
-                        byte[] bytes = jarFile[jarPath];
-                        Stream newStream = new MemoryStream(bytes);
-                        BufferedStream stream = new BufferedStream(newStream);
+                        BufferedStream stream = jarZipStream[jarPath];
+                        stream.Position = 0;
                         zipStream = new ZipInputStream(stream);
                         //Console.WriteLine("*******************" + n);
                         n++;
@@ -1498,14 +1571,79 @@ namespace EntityParse
                         entry = zipStream.GetNextEntry();
                     }
                     zipStream.Close();
+
+                    //------------------------------------------------------------------
+                    //Ionic.Zip.ZipFile zipFile = null;
+                    //if (!jarZipFile.ContainsKey(jarPath) || jarZipFile[jarPath] == null)
+                    //{
+                    //    zipFile = new Ionic.Zip.ZipFile(jarPath);
+                    //    jarZipFile[jarPath] = zipFile;
+                    //}
+                    //else
+                    //{
+                    //    zipFile = jarZipFile[jarPath];
+                    //}
+                    //foreach (Ionic.Zip.ZipEntry entry in zipFile)
+                    //{
+                    //    if (!entry.IsDirectory)
+                    //    {
+                    //        if (entry.FileName.IndexOf("/" + fileName) > -1 || entry.FileName.Equals(fileName))
+                    //        {
+                    //            //byte[] data = new byte[entry.Size];
+                    //            //Console.WriteLine(entry.ToString());
+                    //            //Ionic.Zip.ZipInputStream
+                    //            MemoryStream memory = new MemoryStream();
+                    //            entry.Extract(memory);
+                    //            BufferedStream stream = new BufferedStream(memory);
+                    //            return new XmlTextReader(stream);
+                    //        }
+                    //    }
+                    //}
+
+                    //----------------------------------------------------
+                    //Ionic.Zip.ZipInputStream zipStream = null;
+                    //if (!jarFileStream.ContainsKey(jarPath) || jarFileStream[jarPath] == null)
+                    //{
+                    //    Stream fileStream = File.Open(jarPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    //    zipStream = new Ionic.Zip.ZipInputStream(fileStream);
+                    //    jarFileStream[jarPath] = zipStream;
+                    //}
+                    //else
+                    //{
+                    //    zipStream = jarFileStream[jarPath];
+                    //    zipStream.Position = 0;
+                    //    Console.WriteLine("*************** : " + n);
+                    //    n++;
+                    //}
+
+                    //Ionic.Zip.ZipEntry entry = zipStream.GetNextEntry();
+                    //while (entry != null)
+                    //{
+                    //    if (!entry.IsDirectory)
+                    //    {
+                    //        if (entry.FileName.IndexOf("/" + fileName) > -1 || entry.FileName.Equals(fileName))
+                    //        {
+                    //            byte[] data = new byte[zipStream.Length];
+                    //            zipStream.Read(data, 0, data.Length);
+                    //            BufferedStream stream = new BufferedStream(new MemoryStream(data));
+                    //            return new XmlTextReader(stream);
+                    //        }
+                    //    }
+                    //    //获取下一个文件
+                    //    entry = zipStream.GetNextEntry();
+                    //}
+                    //zipStream.Close();
+
                 }
             }
             return null;
         }
 
         Dictionary<string, byte[]> jarFile = new Dictionary<string, byte[]>();
-        int n = 1;
-        //Dictionary<string,ZipInputStream> jarFileStream = new Dictionary<string, ZipInputStream>();
+        Dictionary<string, Ionic.Zip.ZipFile> jarZipFile = new Dictionary<string, Ionic.Zip.ZipFile>();
+        Dictionary<string, BufferedStream> jarZipStream = new Dictionary<string, BufferedStream>();
+        Dictionary<string, Ionic.Zip.ZipInputStream> jarFileStream = new Dictionary<string, Ionic.Zip.ZipInputStream>();
+        public int n = 1;
 
         public string empToValue(object o)
         {
