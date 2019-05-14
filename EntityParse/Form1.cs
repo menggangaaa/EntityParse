@@ -1774,7 +1774,7 @@ namespace EntityParse
             {
                 column.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
             }
-            for (int i = 0; i < dataGridView1.Rows.Count - 1; i++)
+            for (int i = 2; i < dataGridView1.Rows.Count - 1; i++)
             {
 
                 DataGridViewRow row = dataGridView1.Rows[i];
