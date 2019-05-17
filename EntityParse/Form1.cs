@@ -128,6 +128,7 @@ namespace EntityParse
 
         private void mainPanel_Load(object sender, EventArgs e)
         {
+            this.KeyPreview = true;
             basePath = Application.LocalUserAppDataPath + "\\BaseConfig.ini";//基本信息配置路径
             entityPath = Application.LocalUserAppDataPath + "\\EntityConfig.ini";//实体配置路径
             relationPath = Application.LocalUserAppDataPath + "\\RealtionConfig.ini";//关系配置路径
@@ -1261,7 +1262,7 @@ namespace EntityParse
 
         private void button4_Click(object sender, EventArgs e)
         {
-            if (thisTableNode.upNode != null)
+            if (thisTableNode != null && thisTableNode.upNode != null)
             {
                 dataGridView1.Rows.Clear();
                 thisTableNode.upNode.downNode = thisTableNode;
@@ -1272,7 +1273,7 @@ namespace EntityParse
 
         private void button5_Click(object sender, EventArgs e)
         {
-            if (thisTableNode.downNode != null)
+            if (thisTableNode != null && thisTableNode.downNode != null)
             {
                 dataGridView1.Rows.Clear();
                 thisTableNode = thisTableNode.downNode;
@@ -1893,6 +1894,29 @@ namespace EntityParse
             {
                 output.WriteLine(text);
                 output.Close();
+            }
+        }
+
+        private void mainPanel_MouseClick(object sender, MouseEventArgs e)
+        {
+            //Console.WriteLine(e.Button + ":" + e.Delta);
+        }
+
+        private void mainPanel_MouseDown(object sender, MouseEventArgs e)
+        {
+            //Console.WriteLine(e.Button + ":" + e.Delta);
+        }
+
+        private void dataGridView1_MouseDown(object sender, MouseEventArgs e)
+        {
+            //Console.WriteLine(e.Button + ":" + e.Delta);
+            if (e.Button == MouseButtons.XButton1)
+            {
+                button4_Click(sender, null);
+            }
+            else if (e.Button == MouseButtons.XButton2)
+            {
+                button5_Click(sender, null);
             }
         }
     }

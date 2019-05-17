@@ -138,6 +138,7 @@
             this.dataGridView1.TabIndex = 10;
             this.dataGridView1.DoubleClick += new System.EventHandler(this.dataGridView1_DoubleClick);
             this.dataGridView1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.dataGridView1_KeyPress);
+            this.dataGridView1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.dataGridView1_MouseDown);
             // 
             // column
             // 
@@ -311,6 +312,8 @@
             this.SizeChanged += new System.EventHandler(this.mainPanel_SizeChanged);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.mainPanel_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.mainPanel_DragEnter);
+            this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.mainPanel_MouseClick);
+            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.mainPanel_MouseDown);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

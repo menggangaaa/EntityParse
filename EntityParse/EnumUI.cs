@@ -31,7 +31,7 @@ namespace EntityParse
 
         private void EnumUI_Load(object sender, EventArgs e)
         {
-
+            this.KeyPreview = true;
         }
 
         public DialogResult ShowDialog(ArrayList list)
@@ -46,6 +46,14 @@ namespace EntityParse
             }
 
             return ShowDialog();
+        }
+
+        private void EnumUI_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+            {
+                Close();
+            }
         }
     }
 }

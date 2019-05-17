@@ -86,6 +86,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "枚举值";
             this.Load += new System.EventHandler(this.EnumUI_Load);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.EnumUI_KeyDown);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
 
