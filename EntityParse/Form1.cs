@@ -116,6 +116,14 @@ namespace EntityParse
             {
                 File.Create(path);
             }
+            else
+            {
+                if (path == logPath)
+                {
+                    File.Delete(path);
+                    File.Create(path);
+                }
+            }
         }
 
         private void mainPanel_Load(object sender, EventArgs e)
@@ -1475,6 +1483,7 @@ namespace EntityParse
             foreach (string source in sourceList)
             {
                 string filePath = textBox1.Text + source;
+                wirteLog(DateTime.Now.ToString("yyyyMMdd-HHmm") + ":" + filePath + "\n");
                 DirectoryInfo di = new DirectoryInfo(filePath);
                 if (!di.Exists)
                 {
@@ -1484,7 +1493,12 @@ namespace EntityParse
                 FileInfo[] files = di.GetFiles();
                 foreach (FileInfo file in files)
                 {
+                    wirteLog(DateTime.Now.ToString("yyyyMMdd-HHmm") + ":" + file.FullName + "\n");
                     if (file.FullName.IndexOf("\\metas\\sp") > -1 && file.FullName.IndexOf("\\metas\\sp\\sp_scm-metas.jar") < 0)
+                    {
+                        continue;
+                    }
+                    if (!file.FullName.EndsWith(".jar"))
                     {
                         continue;
                     }
@@ -1514,8 +1528,8 @@ namespace EntityParse
                                     matePath = file.FullName.Replace(textBox1.Text + "\\metas\\", "");
                                 }
                                 //WritePrivateProfileString("JarFileList", mateName, matePath, basePath);
-                                writeMetaDataToConfig(zipStream, entry, mateName, matePath);
                                 wirteLog(DateTime.Now.ToString("yyyyMMdd-HHmm") + ":" + matePath + "\t" + entry.Name + "\n");
+                                writeMetaDataToConfig(zipStream, entry, mateName, matePath);
                             }
                         }
                         //获取下一个文件
