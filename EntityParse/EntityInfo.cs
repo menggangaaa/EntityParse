@@ -11,6 +11,7 @@ namespace EntityParse
         public List<FieldInfo> fields = new List<FieldInfo>();
         public string name { get; set; }
         public string alias { get; set; }
+        public string bosType { get; set; }
         public string tableName { get; set; }
         public EntityInfo baseEntity { get; set; }
 

@@ -307,6 +307,11 @@ namespace EntityParse
                     string columnName = "";
                     if (reader.NodeType == XmlNodeType.Element)
                     {
+                        if (reader.Name== "bosType")
+                        {
+                            info.bosType = reader.ReadString();
+                            continue;
+                        }
                         if (reader.Name == "baseEntity")
                         {
                             if (reader.ReadToDescendant("key"))
@@ -554,6 +559,11 @@ namespace EntityParse
                     string columnName = "";
                     if (reader.NodeType == XmlNodeType.Element)
                     {
+                        if (reader.Name == "bosType")
+                        {
+                            info.bosType = reader.ReadString();
+                            continue;
+                        }
                         if (reader.Name == "baseEntity")
                         {
                             if (reader.ReadToDescendant("key"))
@@ -1299,6 +1309,7 @@ namespace EntityParse
             dataGridView1.Rows[index].Cells[0].Value = info.name;
             dataGridView1.Rows[index].Cells[1].Value = info.alias;
             dataGridView1.Rows[index].Cells[2].Value = info.tableName;
+            dataGridView1.Rows[index].Cells[3].Value = info.bosType;
             dataGridView1.Rows.Add();
             foreach (FieldInfo fieldInfo in info.fields)
             {
